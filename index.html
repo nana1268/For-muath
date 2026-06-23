@@ -1,185 +1,217 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASCII Blooming Rose Motion</title>
+    <title>تصميم مُشِعّ التفاعلي</title>
+    <!-- استدعاء مكتبة p5.js للحركة والشبكة -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@800&family=Orbitron:wght@500;700&family=Inter:wght@400;600&display=swap');
 
         body {
             margin: 0;
             padding: 0;
-            background-color: #000;
-            color: #fff;
+            background-color: #050505;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            font-family: 'Orbitron', monospace;
+            font-family: 'Inter', 'Cairo', sans-serif;
         }
 
-        /* حاوية التصميم المستوحاة من الجوال وأبعاد الصورة الأصيلة */
-        .card {
+        /* حاوية التصميم بأبعاد عمودية متناسقة ومطابقة للصورة */
+        .card-container {
             position: relative;
             width: 380px;
             height: 680px;
             border: 1px solid #222;
             background-color: #000;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: 40px 20px;
-            box-sizing: border-box;
+            overflow: hidden;
             border-radius: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
         }
 
-        .header {
-            text-align: left;
-            width: 100%;
-            padding-left: 10px;
+        /* المربع العلوي المحتوي على الاسم والجمل التشجيعية */
+        .header-box {
+            display: flex;
+            height: 180px;
+            border-bottom: 1px solid #222;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 1.8rem;
-            letter-spacing: 2px;
-            font-weight: 700;
+        /* مربع الاسم المشع العربي (اليمين) */
+        .header-right-box {
+            width: 45%;
+            border-left: 1px solid #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
         }
 
-        .header p {
-            margin: 5px 0 0 0;
-            font-size: 0.8rem;
-            color: #666;
-            letter-spacing: 1px;
-        }
-
-        /* شاشة عرض الرموز المتحركة */
-        #ascii-display {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 7.5px;
-            line-height: 7.5px;
-            white-space: pre;
+        /* تأثير الكلمة العربية المتوهجة باللون الأبيض والنيون الأزرق */
+        .glowing-title {
+            color: #fff;
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: 'Cairo', sans-serif;
             text-align: center;
-            font-weight: bold;
-            color: #ffffff;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
-            user-select: none;
+            text-shadow: 0 0 10px #fff,
+                         0 0 20px #fff,
+                         0 0 30px #00d2ff,
+                         0 0 40px #00d2ff;
+            animation: superGlow 1.5s infinite alternate ease-in-out;
         }
 
-        .footer {
-            text-align: right;
-            width: 100%;
-            max-width: 280px;
-            color: #888;
+        /* مربع الجمل التشجيعية (اليسار) */
+        .header-left-box {
+            width: 55%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 15px;
+        }
+
+        /* عبارة I can fix you الفرعية */
+        .fix-you-title {
+            color: #00d2ff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
+        }
+
+        /* تنسيق العبارة التشجيعية الطويلة */
+        .motivational-text {
+            color: #b3b3b3;
             font-size: 0.65rem;
             line-height: 1.4;
-            letter-spacing: 0.5px;
-            font-family: sans-serif;
+            text-align: left;
+            font-weight: 400;
+        }
+
+        /* منطقة الرسم الخاصة بالشبكة */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* أنيميشن نبض الإشعاع للاسم */
+        @keyframes superGlow {
+            0% {
+                text-shadow: 0 0 10px #fff, 0 0 20px rgba(0,210,255,0.6);
+                transform: scale(0.98);
+            }
+            100% {
+                text-shadow: 0 0 15px #fff, 0 0 30px #00d2ff, 0 0 50px rgba(0,210,255,0.8);
+                transform: scale(1.02);
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="header">
-        <h1>ASCII MOTION</h1>
-        <p>CODE MEETS MOVEMENT</p>
-    </div>
+<div class="card-container">
+    <!-- منطقة تفاعل الحركة (الشبكة والخطوط) -->
+    <div id="canvas-container"></div>
 
-    <!-- مكان عرض الوردة التفاعلية التي تتفتح -->
-    <pre id="ascii-display"></pre>
-
-    <div class="footer">
-        ASCII motion transforms images into dynamic grids of text characters, blending retro aesthetics with modern digital art.
+    <!-- الهيكل العلوي المحدث بالاسم العربي والنصوص المطلوبة -->
+    <div class="header-box">
+        <!-- المربع الأيمن: الاسم المشع بالعربي -->
+        <div class="header-right-box">
+            <div class="glowing-title">مُشِعّ</div>
+        </div>
+        
+        <!-- المربع الأيسر: العبارات التشجيعية بالإنجليزية -->
+        <div class="header-left-box">
+            <div class="fix-you-title">I can fix you</div>
+            <div class="motivational-text">
+                You’ve always been capable of doing great things, with or without anyone by your side. Never forget your worth. At the end of the day, you deserve the best—not just what’s available.
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-const display = document.getElementById('ascii-display');
+let spacing = 32; 
+let targetX = 0;  
+let targetY = 0;
+let easeX = 0;    
+let easeY = 0;
+let easingSpeed = 0.07; // التنعيم الفائق والانسيابي للحركة خلف الماوس
 
-const W = 52;
-const H = 46;
-const asciiChars = " .:-=+*#%@"; 
+function setup() {
+    let canvas = createCanvas(380, 680);
+    canvas.parent('canvas-container');
+    
+    easeX = width / 2;
+    easeY = height / 2 + 90;
+}
 
-let angleX = 0.3; // زاوية ميلان افتراضية لرؤية الوردة من الأعلى قليلاً وهي تفتح
-let angleY = 0;
+function draw() {
+    background(0); 
 
-// متغيرات التحكم بالتفتّح والنمو
-let bloomScale = 0.0;    // حجم الوردة الحالي (يبدأ من صفر يعني مغلقة)
-let targetBloom = 1.0;   // الحجم النهائي بعد اكتمال التفتح
-let bloomSpeed = 0.008;  // سرعة تفتح الوردة (نعومة الحركة)
-
-function renderAsciiRose() {
-    let buffer = Array(W * H).fill(' ');
-    let zBuffer = Array(W * H).fill(0);
-
-    // جعل الوردة تتفتح تدريجياً بنعومة (سموث) حتى تصل للحجم الكامل
-    if (bloomScale < targetBloom) {
-        bloomScale += bloomSpeed;
+    // تتبع حركة الماوس أو اللمس بسلاسة
+    if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
+        targetX = mouseX;
+        targetY = mouseY;
+    } else {
+        // العودة التلقائية للمنتصف عند خروج المؤشر
+        targetX = width / 2;
+        targetY = height / 2 + 110;
     }
+    
+    easeX += (targetX - easeX) * easingSpeed;
+    easeY += (targetY - easeY) * easingSpeed;
 
-    // توليد الوردة برياضيات 3D مدمج بها تأثير التفتح (bloomScale)
-    for (let theta = 0; theta < Math.PI * 5; theta += 0.06) {
-        for (let phi = 0; phi < Math.PI * 2; phi += 0.06) {
+    // رسم شبكة النقاط والخطوط التفاعلية
+    for (let x = spacing / 2; x < width; x += spacing) {
+        for (let y = 180 + spacing / 2; y < height - 20; y += spacing) {
             
-            // تحجيم وتشكيل البتلات بناءً على مقياس التفتح الحالي bloomScale
-            // البتلات تتسع وتنتشر للخارج مع زيادة الوقت
-            let r = 11 * (Math.sin(theta * 1.5) * bloomScale + 1.1) * (1 - 0.25 * Math.cos(phi * 5) * bloomScale);
-            
-            // رسم الساق والورق السفلي
-            let x0 = r * Math.sin(theta) * Math.cos(phi);
-            let y0 = r * Math.sin(theta) * Math.sin(phi) - (theta > Math.PI * 2.5 ? (theta - Math.PI * 2.5) * 4 : 0);
-            let z0 = r * Math.cos(theta);
+            let d = dist(easeX, easeY, x, y);
 
-            // تدوير الوردة 3D لحركة دوران انسيابية
-            let x1 = x0 * Math.cos(angleY) - z0 * Math.sin(angleY);
-            let z1 = x0 * Math.sin(angleY) + z0 * Math.cos(angleY);
+            if (d < 160) {
+                // تلاشي الخطوط تدريجياً وبنعومة تامة عند الأطراف
+                let alpha = map(d, 0, 160, 240, 0);
+                stroke(0, 210, 255, alpha * 0.35); // الروابط متناسقة مع لون الإشعاع النيوني الأزرق
+                strokeWeight(1);
+                line(easeX, easeY, x, y);
 
-            let y2 = y0 * Math.cos(angleX) - z1 * Math.sin(angleX);
-            let z2 = y0 * Math.sin(angleX) + z1 * Math.cos(angleX);
-
-            // إسقاط الأبعاد ثلاثية الأبعاد على الشاشة الثنائية
-            let ooZ = 1 / (z2 + 45);
-            let xp = Math.floor(W / 2 + x1 * 1.6 * ooZ * W * 0.42);
-            let yp = Math.floor(H / 2 - y2 * ooZ * H * 0.42);
-
-            if (xp >= 0 && xp < W && yp >= 0 && yp < H) {
-                let idx = xp + yp * W;
-                
-                // الإضاءة والظلال على الرموز
-                let luminance = Math.floor(((x1 + y2 + z2) / 28 + 1.2) * 4);
-                luminance = Math.max(0, Math.min(asciiChars.length - 1, luminance));
-
-                if (ooZ > zBuffer[idx]) {
-                    zBuffer[idx] = ooZ;
-                    buffer[idx] = asciiChars[luminance];
-                }
+                // النقاط القريبة تتسع وتضيء بناءً على القرب
+                let dotSize = map(d, 0, 160, 6, 2);
+                fill(255, map(d, 0, 160, 255, 100));
+                noStroke();
+                ellipse(x, y, dotSize, dotSize);
+            } else {
+                // النقاط البعيدة تظل ساكنة وخافتة
+                fill(45);
+                noStroke();
+                ellipse(x, y, 2, 2);
             }
         }
     }
 
-    // طباعة الشكل النهائي داخل الـ <pre>
-    let output = "";
-    for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-            output += buffer[x + y * W];
-        }
-        output += "\n";
-    }
-    display.textContent = output;
-
-    // حركة دوران ناعمة مستمرة بعد أو أثناء التفتح
-    angleY += 0.012;
-
-    requestAnimationFrame(renderAsciiRose);
+    // رسم المركز المشع الرئيسي المتنقل
+    noStroke();
+    fill(0, 210, 255, 40);
+    ellipse(easeX, easeY, 25, 25); // الهالة الخارجية الناعمة الأزرق السماوي
+    fill(255);
+    ellipse(easeX, easeY, 9, 9);  // النواة المركزية البيضاء
 }
-
-// تشغيل التأثير
-renderAsciiRose();
 </script>
 
 </body>
